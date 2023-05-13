@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +13,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('nom');
             $table->string('prenom');
             $table->string('email')->unique();
@@ -24,63 +23,56 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('demandes', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('user_id');
-            $table->timestamps();
-
+        Schema::create('cars', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('matricule')->unique();
+            $table->string('model');
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::create('problems', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('tech_id');
-
-            $table->string('autre')->nullable();
-            $table->unsignedInteger('demande_id')->unique();
             $table->timestamps();
-
-            $table->foreign('demande_id')->references('id')->on('demandes')->onDelete('cascade');
         });
+
+        Schema::create('reclamations', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->boolean('repartition')->default(false);
+            $table->boolean('desinstallation')->default(false);
+            $table->boolean('reinstallation')->default(false);
+            $table->boolean('nouvelinstallation')->default(false);
+            $table->boolean('option')->default(false);
+            $table->boolean('sim')->default(false);
+            $table->boolean('isValid')->default(false);
+            $table->unsignedBigInteger('car_id');
+            $table->foreign('car_id')->references('id')->on('cars')->onDelete('cascade');
+            $table->timestamps();
+        });
+
         Schema::create('interventions', function (Blueprint $table) {
-            $table->id();
-            $table->string('type');
-            $table->string('categ');
-            $table->unsignedBigInteger('problem_id');
+            $table->bigIncrements('id');
+            $table->date('date');
+            $table->string('autre')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('reclamation_id');
+            $table->foreign('reclamation_id')->references('id')->on('reclamations')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('problem_id')->references('id')->on('problems')->onDelete('cascade');
         });
 
-        Schema::create('options', function (Blueprint $table) {
-            $table->id();
-            
+        Schema::create('taches', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('categorie');
             $table->string('type');
-            $table->string('categ');
-
-            $table->unsignedBigInteger('problem_id');
-            $table->timestamps();
-
-            $table->foreign('problem_id')->references('id')->on('problems')->onDelete('cascade');
-        });
-
-        Schema::create('diagnostics', function (Blueprint $table) {
-            $table->id();
-            $table->string('type');
-            $table->string('categ');
-
-            $table->unsignedBigInteger('problem_id');
-            $table->timestamps();
-
-            $table->foreign('problem_id')->references('id')->on('problems')->onDelete('cascade');
-        });
-        Schema::create('types', function (Blueprint $table) {
-            $table->id();
             $table->string('value');
-            $table->unsignedInteger('demande_id');
+            $table->unsignedBigInteger('intervention_id');
+            $table->foreign('intervention_id')->references('id')->on('interventions')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('demande_id')->references('id')->on('demandes')->onDelete('cascade');
+        });
+        Schema::create('contacts', function (Blueprint $table) {
+            $table->id();
+            $table->string('email');
+            $table->string('name')->nullable();
+            $table->string('number')->nullable();
+            $table->text('message');
+            $table->timestamps();
         });
     }
 
@@ -91,10 +83,10 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('diagnostics');
-        Schema::dropIfExists('options');
+        Schema::dropIfExists('taches');
         Schema::dropIfExists('interventions');
-        Schema::dropIfExists('problems');
-        Schema::dropIfExists('demandes');
-        Schema::dropIfExists('users');    }
+        Schema::dropIfExists('reclamations');
+        Schema::dropIfExists('cars');
+        Schema::dropIfExists('users');
+    }
 };

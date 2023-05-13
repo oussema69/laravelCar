@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Contact;
 use Illuminate\Support\Facades\Validator;
 
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +48,7 @@ class AuthController extends Controller
             'max' => 'The :attribute field must be no more than :max characters.',
             'min' => 'The :attribute field must be at least :min characters.',
         ]);
-        
+
         if ($validator->fails()) {
             // Return validation error messages
             return response()->json([
@@ -56,7 +57,7 @@ class AuthController extends Controller
                 ]
             ], 422);
         }
-    
+
         // Create the new user
         $user = new User;
         $user->nom = $request->input('nom');
@@ -65,23 +66,54 @@ class AuthController extends Controller
         $user->password = Hash::make($request->input('password'));
         $user->tel = $request->input('tel');
         $user->role = $request->input('role');
-    
+
         if (!$user->save()) {
             // Return an error response if the user couldn't be saved
             return response()->json([
                 'message' => 'Error creating user',
             ], 500);
         }
-    
+
         // Generate and return a success response
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user,
         ], 201);
     }
-    
-    
-    
-    
+
+    public function createContact(Request $request)
+    {
+        $contact = Contact::create([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'number' => $request->input('number'),
+            'message' => $request->input('message')
+        ]);
+
+        return response()->json([
+            'message' => 'Contact created successfully',
+            'contact' => $contact
+        ], 201);
+    }
+    public function getContact()
+{
+    $contacts = Contact::all();
+    return response()->json($contacts);
+}
+public function delete($id)
+{
+    $contact = Contact::find($id);
+    if (!$contact) {
+        return response()->json(['error' => 'Contact not found'], 404);
+    }
+    $contact->delete();
+    return response()->json(['message' => 'Contact deleted successfully'], 200);
+}
+
+
+
+
+
+
 
 }

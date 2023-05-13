@@ -12,9 +12,13 @@ class User extends Model
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = ['nom', 'prenom', 'email', 'password', 'tel', 'role'];
-    public function demandes()
+    public function cars()
     {
-        return $this->hasMany('App\Demande');
+        return $this->hasMany(Car::class);
+    }
+    public function interventions()
+    {
+        return $this->hasMany(Intervention::class);
     }
 }
 
